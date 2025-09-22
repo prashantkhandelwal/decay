@@ -27,6 +27,15 @@ go.work.sum
 # env file
 .env
 
+web/node_modules/
+web/build/
+web/.svelte-kit/
+release
+config.yml
+data/
+server/ui/
+decay.db
+
 # Editor/IDE
 # .idea/
 # .vscode/
