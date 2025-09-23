@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -13,6 +14,8 @@ import (
 
 func Run(c *config.Config) {
 
+	fmt.Println("Starting server with config: ", c)
+
 	if _, err := os.Stat("data"); err != nil {
 		log.Println("\"data\" directory not found!....Creating")
 		if err := os.MkdirAll("data", os.ModePerm); err != nil {
@@ -21,13 +24,7 @@ func Run(c *config.Config) {
 		}
 	}
 
-	// err := config.InitDB()
-	// if err != nil {
-	// 	log.Fatalf("ERROR: Unable to configure database - %v", err.Error())
-	// 	panic(err)
-	// }
-
-	port := c.Port
+	port := c.Server.PORT
 
 	if c.Environment != "" {
 		if strings.ToLower(c.Environment) == "release" {

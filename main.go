@@ -1,24 +1,45 @@
 package main
 
 import (
-	"flag"
+	"fmt"
+	"log"
+	"os"
 
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/prashantkhandelwal/decay/config"
 	"github.com/prashantkhandelwal/decay/server"
 )
 
 func main() {
 
-	port := flag.String("port", "8989", "Specify the port to run the server.")
-	env := flag.String("env", "release", "Switch between release or debug mode.")
+	app := kingpin.New("decay", "Share files with a decay timer.")
+	port := app.Flag("port", "Specify the port to run the server.").Default("8989").String()
+	//env := kingpin.Flag("env", "Switch between release or debug mode.").Default("release").String()
+	appConfig := app.Flag("config", "Path to config file.").Default("config.yaml").String()
 
-	flag.Parse()
+	//configInit := kingpin.Command("init", "Initialize the config file.")
 
-	config := config.Config{
-		Environment: *env,
-		Port:        *port,
+	_, err := app.Parse(os.Args[1:])
+	if err != nil {
+		log.Fatalf("ERROR: Failed to parse flags: %v", err)
+	}
+
+	fmt.Printf("Would ping: %s with timeout %s\n", *port, *appConfig)
+
+	app.HelpFlag.Short('h')
+	app.Version("decay 0.1.0")
+
+	c, err := config.InitConfig()
+	if err != nil {
+		log.Fatalf("ERROR: Cannot load configuration = %v", err)
+	}
+
+	fmt.Printf("Using config file: %v\n", c)
+
+	if *port != "8989" {
+		c.Server.PORT = *port
 	}
 
 	// Starts the server
-	server.Run(&config)
+	server.Run(c)
 }
