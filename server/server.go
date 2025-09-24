@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -13,8 +12,6 @@ import (
 )
 
 func Run(c *config.Config) {
-
-	fmt.Println("Starting server with config: ", c)
 
 	if _, err := os.Stat("data"); err != nil {
 		log.Println("\"data\" directory not found!....Creating")
@@ -39,6 +36,9 @@ func Run(c *config.Config) {
 
 	router := gin.Default()
 
+	// Set trusted proxies
+	router.SetTrustedProxies(c.Server.TrustedProxies)
+
 	embedFS := EmbedFolder(Ui, "ui", true)
 	router.Use(static.Serve("/", embedFS))
 	log.Printf("Server started on port: %v\n", port)
@@ -46,8 +46,9 @@ func Run(c *config.Config) {
 	// User
 	//router.POST("/login", handlers.Login())
 
-	router.GET("/ping", handlers.Ping)
-	//router.POST("/save", handlers.SaveBookmark())
+	api := router.Group("/api")
+
+	api.GET("/ping", handlers.Ping)
 
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{

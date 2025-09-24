@@ -9,8 +9,9 @@ import (
 )
 
 type Server struct {
-	PORT       string `yaml:"port"`
-	EnableLogs bool   `yaml:"enableLogs"`
+	PORT           string   `yaml:"port"`
+	EnableLogs     bool     `yaml:"enableLogs"`
+	TrustedProxies []string `yaml:"trustedProxies"`
 }
 
 type Config struct {
@@ -27,8 +28,9 @@ func InitConfig() (*Config, error) {
 		defaultConfig := &Config{
 			Environment: "Debug",
 			Server: &Server{
-				PORT:       "8989",
-				EnableLogs: false,
+				PORT:           "8989",
+				EnableLogs:     false,
+				TrustedProxies: []string{"127.0.0.1", "::1"},
 			},
 		}
 

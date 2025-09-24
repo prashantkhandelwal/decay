@@ -15,7 +15,7 @@ func main() {
 	app := kingpin.New("decay", "Share files with a decay timer.")
 	port := app.Flag("port", "Specify the port to run the server.").Default("8989").String()
 	//env := kingpin.Flag("env", "Switch between release or debug mode.").Default("release").String()
-	appConfig := app.Flag("config", "Path to config file.").Default("config.yaml").String()
+	//appConfig := app.Flag("config", "Path to config file.").Default("config.yaml").String()
 
 	//configInit := kingpin.Command("init", "Initialize the config file.")
 
@@ -23,8 +23,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: Failed to parse flags: %v", err)
 	}
-
-	fmt.Printf("Would ping: %s with timeout %s\n", *port, *appConfig)
 
 	app.HelpFlag.Short('h')
 	app.Version("decay 0.1.0")
