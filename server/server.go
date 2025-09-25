@@ -5,10 +5,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/prashantkhandelwal/decay/config"
 	"github.com/prashantkhandelwal/decay/server/handlers"
+	"github.com/prashantkhandelwal/decay/server/middleware"
 )
 
 func Run(c *config.Config) {
@@ -38,6 +40,12 @@ func Run(c *config.Config) {
 
 	// Set trusted proxies
 	router.SetTrustedProxies(c.Server.TrustedProxies)
+	router.Use(cors.New(cors.Config{
+		AllowedOrigins:   []string{"http://localhost:8989"},
+		AllowedMethods:   []string{"POST", "GET"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	}))
 
 	embedFS := EmbedFolder(Ui, "ui", true)
 	router.Use(static.Serve("/", embedFS))
@@ -46,8 +54,11 @@ func Run(c *config.Config) {
 	// User
 	//router.POST("/login", handlers.Login())
 
-	api := router.Group("/api")
+	router.POST("/login", handlers.LoginHandler())
+	router.POST("/token/refresh", handlers.RefreshHandler())
+	router.POST("/logout", handlers.LogoutHandler())
 
+	api := router.Group("/api", middleware.AuthMiddleware)
 	api.GET("/ping", handlers.Ping)
 
 	router.NoRoute(func(c *gin.Context) {
