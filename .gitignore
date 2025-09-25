@@ -35,6 +35,8 @@ config.yml
 data/
 server/ui/
 decay.db
+decay.db-shm
+decay.db-wal
 
 # Editor/IDE
 # .idea/
