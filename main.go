@@ -32,6 +32,11 @@ func main() {
 		log.Fatalf("ERROR: Cannot load configuration = %v", err)
 	}
 
+	err = config.InitDB()
+	if err != nil {
+		log.Fatalf("ERROR: Cannot initialize database = %v", err)
+	}
+
 	fmt.Printf("Using config file: %v\n", c)
 
 	if *port != "8989" {
