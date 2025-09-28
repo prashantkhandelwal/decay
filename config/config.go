@@ -14,9 +14,16 @@ type Server struct {
 	TrustedProxies []string `yaml:"trustedProxies"`
 }
 
+type FileSettings struct {
+	MimeTypes []string `yaml:"mimeTypes"`
+	MaxSize   int64    `yaml:"maxSize"`
+	UploadDir string   `yaml:"uploadDir"`
+}
+
 type Config struct {
-	Environment string  `yaml:"environment"`
-	Server      *Server `yaml:"server"`
+	Environment string        `yaml:"environment"`
+	Server      *Server       `yaml:"server"`
+	File        *FileSettings `yaml:"file"`
 }
 
 func InitConfig() (*Config, error) {
@@ -31,6 +38,11 @@ func InitConfig() (*Config, error) {
 				PORT:           "8989",
 				EnableLogs:     false,
 				TrustedProxies: []string{"127.0.0.1", "::1"},
+			},
+			File: &FileSettings{
+				MimeTypes: []string{"image/jpeg", "image/png", "application/pdf"},
+				MaxSize:   10 * 1024 * 1024, // 10 MB
+				UploadDir: "./uploads",
 			},
 		}
 

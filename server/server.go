@@ -57,6 +57,7 @@ func Run(c *config.Config) {
 	router.POST("/login", handlers.LoginHandler())
 	router.POST("/token/refresh", handlers.RefreshHandler())
 	router.POST("/logout", handlers.LogoutHandler())
+	router.POST("/upload", handlers.UploadHandler(c.File))
 
 	api := router.Group("/api", middleware.AuthMiddleware)
 	api.GET("/ping", handlers.Ping)

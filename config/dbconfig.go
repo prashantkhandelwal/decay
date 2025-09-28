@@ -23,26 +23,21 @@ func InitDB() error {
 
 		log.Println("Database: decay.db created!")
 
-		q := `CREATE TABLE "config" (
-					"id"	INTEGER NOT NULL UNIQUE,
-					"key"	TEXT NOT NULL,
-					"value"	TEXT NOT NULL,
-					PRIMARY KEY("id" AUTOINCREMENT)
+		schema := `CREATE TABLE IF NOT EXISTS refresh_tokens (
+				jti         TEXT PRIMARY KEY,
+				username    TEXT NOT NULL,
+				expires_at  INTEGER NOT NULL,        -- unix seconds
+				revoked     INTEGER NOT NULL DEFAULT 0,
+				issued_at   INTEGER NOT NULL         -- unix seconds
 				);
-				CREATE TABLE "bookmarks" (
-					"id"	INTEGER NOT NULL UNIQUE,
-					"url"	TEXT NOT NULL,
-					"title"	BLOB NOT NULL,
-					"description"	TEXT,
-					"snapshot"	REAL,
-					"date_added"	DATETIME NOT NULL,
-					"date_modified"	DATETIME,
-					"tags"	INTEGER,
-					"is_archived"	INTEGER NOT NULL,
-					PRIMARY KEY("id" AUTOINCREMENT)
-				);`
+				CREATE INDEX IF NOT EXISTS idx_rt_username ON refresh_tokens(username);
 
-		_, err = db.Exec(q)
+				CREATE TABLE IF NOT EXISTS user_session (
+				username    TEXT PRIMARY KEY,
+				valid_after INTEGER NOT NULL DEFAULT 0  -- unix seconds (0 = never invalidated)
+				);
+				`
+		_, err = db.Exec(schema)
 		if err != nil {
 			db.Close()
 			// err := os.Remove("bind.db")
