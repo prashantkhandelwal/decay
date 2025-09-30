@@ -36,7 +36,23 @@ func InitDB() error {
 				username    TEXT PRIMARY KEY,
 				valid_after INTEGER NOT NULL DEFAULT 0  -- unix seconds (0 = never invalidated)
 				);
-				`
+
+				CREATE TABLE IF NOT EXISTS uploads (
+				id			TEXT NOT NULL UNIQUE,
+				title		TEXT NOT NULL,
+				url_viewer	TEXT NOT NULL,
+				url			TEXT NOT NULL,
+				display_url	TEXT NOT NULL,
+				width		INTEGER,
+				height		INTEGER,
+				size		INTEGER NOT NULL,
+				time		TEXT NOT NULL,
+				expiration	INTEGER NOT NULL,
+				filename	TEXT NOT NULL,
+				mime		INTEGER,
+				PRIMARY KEY(id)
+			);`
+
 		_, err = db.Exec(schema)
 		if err != nil {
 			db.Close()
