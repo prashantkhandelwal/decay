@@ -2,30 +2,39 @@ package handlers
 
 import (
 	"fmt"
-	"mime/multipart"
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prashantkhandelwal/decay/config"
+	"github.com/prashantkhandelwal/decay/db"
+	"github.com/prashantkhandelwal/decay/utils"
 )
 
 func UploadHandler(fconfig *config.FileSettings) gin.HandlerFunc {
 	fn := func(g *gin.Context) {
 		// Parse the multipart form
 		file, err := g.FormFile("file")
+
+		title := g.PostForm("title")
+		var f db.File
+		f.Title = title
+
 		if err != nil {
 			g.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
 			return
 		}
 
-		fmt.Printf("Received file: %s\n", file.Filename)
-		fmt.Printf("File size: %d bytes\n", file.Size)
-		fmt.Printf("MIME header: %v\n", file.Header)
+		f.Size = file.Size
+		f.Mime = file.Header.Get("Content-Type")
+		if strings.HasPrefix(f.Mime, "image/") {
+			f.Width, f.Height, _ = utils.GetImageDimensions(file)
+		}
 
 		// Validate file type and size
 		fmt.Println("Validating file...")
-		if !validateFile(fconfig, file) {
+		if !utils.ValidateFile(fconfig, file) {
 			g.String(http.StatusBadRequest, "Invalid file type or size exceeds limit")
 			return
 		}
@@ -37,23 +46,22 @@ func UploadHandler(fconfig *config.FileSettings) gin.HandlerFunc {
 		if err := g.SaveUploadedFile(file, dst); err != nil {
 			g.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 			return
+		} else {
+			id, err := db.InsertFile(f, file)
+			if err != nil {
+				g.String(http.StatusInternalServerError, fmt.Sprintf("insert file err: %s", err.Error()))
+				return
+			}
+			f.ID = id
+			//fmt.Printf("File %s uploaded successfully to %s\n", file.Filename, dst)
 		}
 
-		g.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully to %s", file.Filename, dst))
+		g.JSON(http.StatusOK, gin.H{
+			"id":       f.ID,
+			"filename": file.Filename,
+			"title":    title,
+		})
+		//g.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully to %s", file.Filename, dst))
 	}
 	return gin.HandlerFunc(fn)
-}
-
-func validateFile(fconfig *config.FileSettings, file *multipart.FileHeader) bool {
-	isValidType := false
-	fmt.Println("Checking MIME type...")
-	mimeType := file.Header.Get("Content-Type")
-	for _, t := range fconfig.MimeTypes {
-		if t == mimeType {
-			isValidType = true
-			break
-		}
-	}
-	isValidSize := file.Size <= fconfig.MaxSize
-	return isValidType && isValidSize
 }

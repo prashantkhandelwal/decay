@@ -49,17 +49,13 @@ func InitDB() error {
 				time		TEXT NOT NULL,
 				expiration	INTEGER NOT NULL,
 				filename	TEXT NOT NULL,
-				mime		INTEGER,
+				mime		TEXT,
 				PRIMARY KEY(id)
 			);`
 
 		_, err = db.Exec(schema)
 		if err != nil {
 			db.Close()
-			// err := os.Remove("bind.db")
-			// if err != nil {
-			// 	log.Fatalf("Setup failed - Cannot delete database %s", err)
-			// }
 			log.Fatalf("Database: Error in setting up database tables. - %s", err.Error())
 			return err
 		}

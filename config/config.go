@@ -9,6 +9,7 @@ import (
 )
 
 type Server struct {
+	URL            string   `yaml:"url"`
 	PORT           string   `yaml:"port"`
 	EnableLogs     bool     `yaml:"enableLogs"`
 	TrustedProxies []string `yaml:"trustedProxies"`
@@ -35,6 +36,7 @@ func InitConfig() (*Config, error) {
 		defaultConfig := &Config{
 			Environment: "Debug",
 			Server: &Server{
+				URL:            "localhost",
 				PORT:           "8989",
 				EnableLogs:     false,
 				TrustedProxies: []string{"127.0.0.1", "::1"},
@@ -70,4 +72,12 @@ func InitConfig() (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+func GetConfig() *Config {
+	config, err := InitConfig()
+	if err != nil {
+		log.Fatalf("error initializing config: %v", err)
+	}
+	return config
 }
