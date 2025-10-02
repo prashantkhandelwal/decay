@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"mime/multipart"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/prashantkhandelwal/decay/config"
@@ -47,6 +49,11 @@ func InsertFile(f File, file *multipart.FileHeader) (string, error) {
 	displayURL := serverURL + ":" + c.Server.PORT + "/display/" + id
 
 	f.ID = id
+
+	if f.Title == "" {
+		f.Title = strings.TrimSuffix(f.Filename, filepath.Ext(f.Filename))
+	}
+
 	f.URLViewer = urlViewer
 	f.URL = fileURL
 	f.DisplayURL = displayURL
