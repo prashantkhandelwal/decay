@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/contrib/cors"
@@ -11,6 +12,8 @@ import (
 	"github.com/prashantkhandelwal/decay/config"
 	"github.com/prashantkhandelwal/decay/server/handlers"
 	"github.com/prashantkhandelwal/decay/server/middleware"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func Run(c *config.Config) {
@@ -22,6 +25,8 @@ func Run(c *config.Config) {
 			panic(err)
 		}
 	}
+
+	prometheus.MustRegister(middleware.HttpRequestTotal)
 
 	port := c.Server.PORT
 
@@ -59,8 +64,18 @@ func Run(c *config.Config) {
 	router.POST("/logout", handlers.LogoutHandler())
 	router.POST("/upload", handlers.UploadHandler(c.File))
 
-	api := router.Group("/api", middleware.AuthMiddleware)
-	api.GET("/ping", handlers.Ping)
+	// TODO: Set this to 'api' later and protect with AuthMiddleware
+	_ = router.Group("/api", middleware.AuthMiddleware)
+
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	// Total HTTP requests metric
+	router.Use(func(c *gin.Context) {
+		c.Next()
+		middleware.HttpRequestTotal.WithLabelValues(c.Request.Method, c.Request.URL.Path, strconv.Itoa(c.Writer.Status())).Inc()
+	})
+
+	router.GET("/ping", handlers.Ping)
 
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{
