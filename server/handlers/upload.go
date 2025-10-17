@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prashantkhandelwal/decay/config"
 	"github.com/prashantkhandelwal/decay/db"
+	"github.com/prashantkhandelwal/decay/server/middleware"
 	"github.com/prashantkhandelwal/decay/utils"
 )
 
@@ -16,6 +17,9 @@ func UploadHandler(fconfig *config.FileSettings) gin.HandlerFunc {
 	fn := func(g *gin.Context) {
 		// Parse the multipart form
 		file, err := g.FormFile("file")
+
+		// Total requests counter
+		middleware.TotalFileUploadRequests.WithLabelValues("1").Inc()
 
 		title := g.PostForm("title")
 		var f db.File
@@ -44,9 +48,12 @@ func UploadHandler(fconfig *config.FileSettings) gin.HandlerFunc {
 
 		// Save the uploaded file
 		if err := g.SaveUploadedFile(file, dst); err != nil {
+			middleware.FailedFileUploadRequests.WithLabelValues("1").Inc()
 			g.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 			return
 		} else {
+			middleware.SuccessfulFileUploadRequests.WithLabelValues("1").Inc()
+			// Insert file metadata into the database
 			id, err := db.InsertFile(f, file)
 			if err != nil {
 				g.String(http.StatusInternalServerError, fmt.Sprintf("insert file err: %s", err.Error()))

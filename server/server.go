@@ -29,7 +29,11 @@ func Run(c *config.Config) {
 		}
 	}
 
+	// Register Prometheus metrics
 	prometheus.MustRegister(middleware.HttpRequestTotal)
+	prometheus.MustRegister(middleware.TotalFileUploadRequests)
+	prometheus.MustRegister(middleware.SuccessfulFileUploadRequests)
+	prometheus.MustRegister(middleware.FailedFileUploadRequests)
 
 	port := c.Server.PORT
 
