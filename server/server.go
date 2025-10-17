@@ -3,9 +3,12 @@ package server
 import (
 	"log"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/contrib/cors"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -42,6 +45,11 @@ func Run(c *config.Config) {
 	}
 
 	router := gin.Default()
+
+	// Router for pprof
+	_debugRouter := gin.Default()
+
+	pprof.Register(_debugRouter)
 
 	// Set trusted proxies
 	router.SetTrustedProxies(c.Server.TrustedProxies)
@@ -83,10 +91,27 @@ func Run(c *config.Config) {
 		})
 	})
 
-	err := router.Run(":" + port)
-	if err != nil {
-		log.Fatalf("Error starting the server! - %v", err)
-	}
+	// Running API server
+	go func() {
+		err := router.Run(":" + port)
+		if err != nil {
+			log.Fatalf("Error starting the server! - %v", err)
+		}
 
-	log.Println("Server running!")
+		log.Println("Server running!")
+	}()
+
+	// Running pprof server
+	go func() {
+		err := _debugRouter.Run(":6060")
+		if err != nil {
+			log.Fatalf("Error starting the pprof server! - %v", err)
+		}
+
+		log.Println("Pprof server running!")
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
 }
