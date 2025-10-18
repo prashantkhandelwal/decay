@@ -65,7 +65,6 @@ func Run(c *config.Config) {
 
 	// embedFS := EmbedFolder(Ui, "ui", true)
 	// router.Use(static.Serve("/", embedFS))
-	log.Printf("Server started on port: %v\n", port)
 
 	// User
 	//router.POST("/login", handlers.Login())
@@ -87,6 +86,7 @@ func Run(c *config.Config) {
 		middleware.HttpRequestTotal.WithLabelValues(c.Request.Method, c.Request.URL.Path, strconv.Itoa(c.Writer.Status())).Inc()
 	})
 
+	// This route is used for health checks
 	router.GET("/ping", handlers.Ping)
 
 	router.NoRoute(func(c *gin.Context) {
@@ -102,7 +102,8 @@ func Run(c *config.Config) {
 			log.Fatalf("Error starting the server! - %v", err)
 		}
 
-		log.Println("Server running!")
+		log.Printf("API server started on port: %v\n", port)
+
 	}()
 
 	// Running pprof server
@@ -112,7 +113,7 @@ func Run(c *config.Config) {
 			log.Fatalf("Error starting the pprof server! - %v", err)
 		}
 
-		log.Println("Pprof server running!")
+		log.Printf("Pprof server (endpoint /metrics) started on port: %v\n", 6060)
 	}()
 
 	quit := make(chan os.Signal, 1)

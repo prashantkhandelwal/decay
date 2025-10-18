@@ -5,13 +5,8 @@ import (
 )
 
 var (
-	HttpRequestTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "http_requests_total",
-			Help: "Total number of HTTP requests.",
-		},
-		[]string{"method", "path", "status"},
-	)
+
+	// Upload metrics
 
 	TotalFileUploadRequests = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -35,5 +30,31 @@ var (
 			Help: "Number of failed file upload requests.",
 		},
 		[]string{"count"},
+	)
+
+	// Server errors
+
+	HttpRequestTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests.",
+		},
+		[]string{"method", "path", "status"},
+	)
+
+	HttpBadRequests = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_bad_requests_total",
+			Help: "Total number of bad HTTP requests.",
+		},
+		[]string{"method", "path", "status"},
+	)
+
+	HttpHeartbeatRequests = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_heartbeat_requests_total",
+			Help: "Total number of heartbeat HTTP requests.",
+		},
+		[]string{"method", "path", "status"},
 	)
 )

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -21,14 +22,15 @@ func UploadHandler(fconfig *config.FileSettings) gin.HandlerFunc {
 		// Total requests counter
 		middleware.TotalFileUploadRequests.WithLabelValues("1").Inc()
 
+		if err != nil {
+			g.String(http.StatusBadRequest, fmt.Sprintf("Get form err: %s", err.Error()))
+			middleware.HttpBadRequests.WithLabelValues(g.Request.Method, g.FullPath(), strconv.Itoa(g.Writer.Status())).Inc()
+			return
+		}
+
 		title := g.PostForm("title")
 		var f db.File
 		f.Title = title
-
-		if err != nil {
-			g.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-			return
-		}
 
 		f.Size = file.Size
 		f.Mime = file.Header.Get("Content-Type")
@@ -40,6 +42,7 @@ func UploadHandler(fconfig *config.FileSettings) gin.HandlerFunc {
 		fmt.Println("Validating file...")
 		if !utils.ValidateFile(fconfig, file) {
 			g.String(http.StatusBadRequest, "Invalid file type or size exceeds limit")
+			middleware.HttpBadRequests.WithLabelValues(g.Request.Method, g.FullPath(), strconv.Itoa(g.Writer.Status())).Inc()
 			return
 		}
 
@@ -50,6 +53,7 @@ func UploadHandler(fconfig *config.FileSettings) gin.HandlerFunc {
 		if err := g.SaveUploadedFile(file, dst); err != nil {
 			middleware.FailedFileUploadRequests.WithLabelValues("1").Inc()
 			g.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+			middleware.HttpBadRequests.WithLabelValues(g.Request.Method, g.FullPath(), strconv.Itoa(g.Writer.Status())).Inc()
 			return
 		} else {
 			middleware.SuccessfulFileUploadRequests.WithLabelValues("1").Inc()
