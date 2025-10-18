@@ -9,11 +9,11 @@ import (
 )
 
 func InitDB() error {
-	if _, err := os.Stat("decay.db"); err != nil {
+	if _, err := os.Stat("data\\decay.db"); err != nil {
 
 		log.Println("Database: decay.db does not exist....Creating")
 
-		db, err := sql.Open("sqlite", "decay.db")
+		db, err := sql.Open("sqlite", "data\\decay.db")
 		if err != nil {
 			log.Fatal("Error in opening/creating the database")
 			return err

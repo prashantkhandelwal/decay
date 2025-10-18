@@ -27,7 +27,7 @@ func DefaultAuthConfig() *AuthConfig {
 		CookieSecure:       false,
 		CookieSameSiteMode: http.SameSiteNoneMode,
 		TokenIssuer:        "decay",
-		DBPath:             "decay.db",
+		DBPath:             "data\\decay.db",
 	}
 }
 

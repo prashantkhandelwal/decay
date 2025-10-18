@@ -26,7 +26,7 @@ func initDB(ctx context.Context, path string) (*sql.DB, error) {
 func GetDB() (*sql.DB, error) {
 	ctx := context.Background()
 	var err error
-	db, err := initDB(ctx, "decay.db")
+	db, err := initDB(ctx, "data\\decay.db")
 	if err != nil {
 		panic(err)
 	}

@@ -22,10 +22,16 @@ type FileSettings struct {
 	UploadDir string   `yaml:"uploadDir"`
 }
 
+type JobScheduler struct {
+	JobName     string `yaml:"jobName"`
+	JobInterval string `yaml:"jobInterval"`
+}
+
 type Config struct {
 	Environment string        `yaml:"environment"`
 	Server      *Server       `yaml:"server"`
 	File        *FileSettings `yaml:"file"`
+	Job         *JobScheduler `yaml:"job"`
 	Debugging   *Debugging    `yaml:"debugging"`
 }
 
@@ -53,6 +59,10 @@ func InitConfig() (*Config, error) {
 				MimeTypes: []string{"image/jpeg", "image/png", "application/pdf"},
 				MaxSize:   10 * 1024 * 1024, // 10 MB
 				UploadDir: "./uploads",
+			},
+			Job: &JobScheduler{
+				JobName:     "FileCleanup",
+				JobInterval: "15m",
 			},
 			Debugging: &Debugging{
 				EnablePprof: true,
