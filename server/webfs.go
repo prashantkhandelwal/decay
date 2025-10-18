@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/contrib/static"
 )
 
-//go:embed ui/*
+// //go:embed ui/*
 var Ui embed.FS
 
 type embedFileSystem struct {

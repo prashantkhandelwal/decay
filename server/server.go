@@ -10,7 +10,6 @@ import (
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/contrib/cors"
-	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/prashantkhandelwal/decay/config"
 	"github.com/prashantkhandelwal/decay/server/handlers"
@@ -64,8 +63,8 @@ func Run(c *config.Config) {
 		AllowCredentials: true,
 	}))
 
-	embedFS := EmbedFolder(Ui, "ui", true)
-	router.Use(static.Serve("/", embedFS))
+	// embedFS := EmbedFolder(Ui, "ui", true)
+	// router.Use(static.Serve("/", embedFS))
 	log.Printf("Server started on port: %v\n", port)
 
 	// User
@@ -79,7 +78,8 @@ func Run(c *config.Config) {
 	// TODO: Set this to 'api' later and protect with AuthMiddleware
 	_ = router.Group("/api", middleware.AuthMiddleware)
 
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	// Prometheus metrics endpoint
+	_debugRouter.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	// Total HTTP requests metric
 	router.Use(func(c *gin.Context) {
