@@ -35,6 +35,13 @@ func Run(c *config.Config) {
 	prometheus.MustRegister(middleware.FailedFileUploadRequests)
 
 	port := c.Server.PORT
+	var debugPort uint16
+	if c.Debugging.EnablePprof {
+		debugPort = c.Debugging.Port
+		log.Printf("Debugging enabled on port: %v\n", debugPort)
+	} else {
+		log.Println("Debugging is disabled.")
+	}
 
 	if c.Environment != "" {
 		if strings.ToLower(c.Environment) == "release" {
@@ -72,10 +79,12 @@ func Run(c *config.Config) {
 	router.POST("/login", handlers.LoginHandler())
 	router.POST("/token/refresh", handlers.RefreshHandler())
 	router.POST("/logout", handlers.LogoutHandler())
-	router.POST("/upload", handlers.UploadHandler(c.File))
 
-	// TODO: Set this to 'api' later and protect with AuthMiddleware
-	_ = router.Group("/api", middleware.AuthMiddleware)
+	// This route is used for health checks
+	router.GET("/ping", handlers.Ping)
+
+	api := router.Group("/api", middleware.AuthMiddleware)
+	api.POST("/upload", handlers.UploadHandler(c.File))
 
 	// Prometheus metrics endpoint
 	_debugRouter.GET("/metrics", gin.WrapH(promhttp.Handler()))
@@ -86,9 +95,6 @@ func Run(c *config.Config) {
 		middleware.HttpRequestTotal.WithLabelValues(c.Request.Method, c.Request.URL.Path, strconv.Itoa(c.Writer.Status())).Inc()
 	})
 
-	// This route is used for health checks
-	router.GET("/ping", handlers.Ping)
-
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{
 			"code": "PAGE_NOT_FOUND", "message": "Page not found",
@@ -97,7 +103,7 @@ func Run(c *config.Config) {
 
 	// Running API server
 	go func() {
-		err := router.Run(":" + port)
+		err := router.Run(":" + strconv.Itoa(int(port)))
 		if err != nil {
 			log.Fatalf("Error starting the server! - %v", err)
 		}
@@ -108,12 +114,12 @@ func Run(c *config.Config) {
 
 	// Running pprof server
 	go func() {
-		err := _debugRouter.Run(":6060")
+		err := _debugRouter.Run(":" + strconv.Itoa(int(debugPort)))
 		if err != nil {
 			log.Fatalf("Error starting the pprof server! - %v", err)
 		}
 
-		log.Printf("Pprof server (endpoint /metrics) started on port: %v\n", 6060)
+		log.Printf("Pprof server (endpoint /metrics) started on port: %v\n", debugPort)
 	}()
 
 	quit := make(chan os.Signal, 1)

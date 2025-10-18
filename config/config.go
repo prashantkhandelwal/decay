@@ -10,9 +10,10 @@ import (
 
 type Server struct {
 	URL            string   `yaml:"url"`
-	PORT           string   `yaml:"port"`
+	PORT           uint16   `yaml:"port"`
 	EnableLogs     bool     `yaml:"enableLogs"`
 	TrustedProxies []string `yaml:"trustedProxies"`
+	Monitoring     bool     `yaml:"monitoring"`
 }
 
 type FileSettings struct {
@@ -25,6 +26,12 @@ type Config struct {
 	Environment string        `yaml:"environment"`
 	Server      *Server       `yaml:"server"`
 	File        *FileSettings `yaml:"file"`
+	Debugging   *Debugging    `yaml:"debugging"`
+}
+
+type Debugging struct {
+	EnablePprof bool   `yaml:"enablePprof"`
+	Port        uint16 `yaml:"port"`
 }
 
 func InitConfig() (*Config, error) {
@@ -37,14 +44,19 @@ func InitConfig() (*Config, error) {
 			Environment: "Debug",
 			Server: &Server{
 				URL:            "localhost",
-				PORT:           "8989",
+				PORT:           8989,
 				EnableLogs:     false,
 				TrustedProxies: []string{"127.0.0.1", "::1"},
+				Monitoring:     true,
 			},
 			File: &FileSettings{
 				MimeTypes: []string{"image/jpeg", "image/png", "application/pdf"},
 				MaxSize:   10 * 1024 * 1024, // 10 MB
 				UploadDir: "./uploads",
+			},
+			Debugging: &Debugging{
+				EnablePprof: true,
+				Port:        6060,
 			},
 		}
 

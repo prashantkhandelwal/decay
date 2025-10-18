@@ -13,7 +13,7 @@ import (
 func main() {
 
 	app := kingpin.New("decay", "Share files with a decay timer.")
-	port := app.Flag("port", "Specify the port to run the server.").Default("8989").String()
+	port := app.Flag("port", "Specify the port to run the server.").Default("8989").Uint16()
 	//env := kingpin.Flag("env", "Switch between release or debug mode.").Default("release").String()
 	//appConfig := app.Flag("config", "Path to config file.").Default("config.yaml").String()
 
@@ -39,7 +39,7 @@ func main() {
 
 	fmt.Printf("Using config file: %v\n", c)
 
-	if *port != "8989" {
+	if *port != 8989 {
 		c.Server.PORT = *port
 	}
 

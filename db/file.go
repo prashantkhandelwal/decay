@@ -4,6 +4,7 @@ import (
 	"context"
 	"mime/multipart"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -44,9 +45,9 @@ func InsertFile(f File, file *multipart.FileHeader) (string, error) {
 
 	ctx := context.Background()
 
-	urlViewer := serverURL + ":" + c.Server.PORT + "/view/" + id
-	fileURL := serverURL + ":" + c.Server.PORT + "/file/" + id
-	displayURL := serverURL + ":" + c.Server.PORT + "/display/" + id
+	urlViewer := serverURL + ":" + strconv.Itoa(int(c.Server.PORT)) + "/view/" + id
+	fileURL := serverURL + ":" + strconv.Itoa(int(c.Server.PORT)) + "/file/" + id
+	displayURL := serverURL + ":" + strconv.Itoa(int(c.Server.PORT)) + "/display/" + id
 
 	f.ID = id
 
