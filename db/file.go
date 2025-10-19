@@ -29,7 +29,6 @@ type File struct {
 }
 
 func InsertFile(f File, file *multipart.FileHeader) (string, error) {
-	db, _ := GetDB()
 	query := `INSERT INTO uploads (id, title, url_viewer, url, display_url, width, height, size, time, expiration, filename, mime)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	id, err := utils.GenerateBase62ID()
@@ -62,7 +61,7 @@ func InsertFile(f File, file *multipart.FileHeader) (string, error) {
 	f.Time = time.Now().Unix() // time the file was uploaded
 	f.Filename = file.Filename
 
-	result, err := db.ExecContext(ctx, query,
+	result, err := dbase.ExecContext(ctx, query,
 		f.ID,
 		f.Title,
 		f.URLViewer,

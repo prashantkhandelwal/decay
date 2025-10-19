@@ -8,9 +8,7 @@ import (
 )
 
 func SaveRefresh(ctx context.Context, jti, username string, issuedAt, exp time.Time) error {
-	db, _ := GetDB()
-
-	_, err := db.ExecContext(ctx,
+	_, err := dbase.ExecContext(ctx,
 		`INSERT INTO refresh_tokens(jti, username, expires_at, revoked, issued_at)
          VALUES(?, ?, ?, 0, ?)`,
 		jti, username, exp.Unix(), issuedAt.Unix())
@@ -22,9 +20,7 @@ func SaveRefresh(ctx context.Context, jti, username string, issuedAt, exp time.T
 }
 
 func RevokeRefresh(ctx context.Context, jti string) error {
-	db, _ := GetDB()
-
-	_, err := db.ExecContext(ctx, `UPDATE refresh_tokens SET revoked=1 WHERE jti=?`, jti)
+	_, err := dbase.ExecContext(ctx, `UPDATE refresh_tokens SET revoked=1 WHERE jti=?`, jti)
 	if err != nil {
 		log.Printf("ERROR:Database: Error in revoking refresh token. %s", err)
 	}
@@ -33,10 +29,8 @@ func RevokeRefresh(ctx context.Context, jti string) error {
 }
 
 func SetValidAfterNow(ctx context.Context, username string) error {
-	db, _ := GetDB()
-
 	now := time.Now().UTC().Unix()
-	_, err := db.ExecContext(ctx, `
+	_, err := dbase.ExecContext(ctx, `
 		INSERT INTO user_session (username, valid_after)
 		VALUES(?, ?)
 		ON CONFLICT(username) DO UPDATE SET valid_after=excluded.valid_after
@@ -49,12 +43,10 @@ func SetValidAfterNow(ctx context.Context, username string) error {
 }
 
 func IsRefreshValid(ctx context.Context, jti, username string, now time.Time) (bool, error) {
-	db, _ := GetDB()
-
 	var expires int64
 	var revoked int
 	var user string
-	err := db.QueryRowContext(ctx,
+	err := dbase.QueryRowContext(ctx,
 		`SELECT username, expires_at, revoked
            FROM refresh_tokens
           WHERE jti=?`, jti).Scan(&user, &expires, &revoked)
@@ -71,9 +63,7 @@ func IsRefreshValid(ctx context.Context, jti, username string, now time.Time) (b
 }
 
 func RevokeAllRefreshForUser(ctx context.Context, username string) error {
-	db, _ := GetDB()
-
-	_, err := db.ExecContext(ctx, `UPDATE refresh_tokens SET revoked=1 WHERE username=? AND revoked=0`, username)
+	_, err := dbase.ExecContext(ctx, `UPDATE refresh_tokens SET revoked=1 WHERE username=? AND revoked=0`, username)
 	if err != nil {
 		log.Printf("ERROR:Database: Error in revoking all refresh tokens for user %s. %s", username, err)
 	}
@@ -82,8 +72,7 @@ func RevokeAllRefreshForUser(ctx context.Context, username string) error {
 
 func GetValidAfter(ctx context.Context, username string) (time.Time, error) {
 	var ts int64
-	db, _ := GetDB()
-	err := db.QueryRowContext(ctx, `SELECT valid_after FROM user_session WHERE username=?`, username).Scan(&ts)
+	err := dbase.QueryRowContext(ctx, `SELECT valid_after FROM user_session WHERE username=?`, username).Scan(&ts)
 	if err == sql.ErrNoRows {
 		return time.Time{}, nil
 	}

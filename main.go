@@ -7,6 +7,7 @@ import (
 
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/prashantkhandelwal/decay/config"
+	"github.com/prashantkhandelwal/decay/db"
 	"github.com/prashantkhandelwal/decay/server"
 )
 
@@ -36,6 +37,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("ERROR: Cannot initialize database = %v", err)
 	}
+
+	// Open and cache the DB connection
+	db.OpenDB()
 
 	fmt.Printf("Using config file: %v\n", c)
 

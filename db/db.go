@@ -8,6 +8,8 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+var dbase *sql.DB
+
 func initDB(ctx context.Context, path string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite", path)
 
@@ -23,12 +25,13 @@ func initDB(ctx context.Context, path string) (*sql.DB, error) {
 	return db, nil
 }
 
-func GetDB() (*sql.DB, error) {
+func OpenDB() error {
 	ctx := context.Background()
 	var err error
-	db, err := initDB(ctx, "data\\decay.db")
+	dbase, err = initDB(ctx, "data\\decay.db")
 	if err != nil {
 		panic(err)
 	}
-	return db, nil
+
+	return nil
 }
