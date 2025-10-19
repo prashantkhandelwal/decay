@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"image"
 	"mime/multipart"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/prashantkhandelwal/decay/config"
 )
@@ -36,4 +39,29 @@ func GetImageDimensions(fileHeader *multipart.FileHeader) (int, int, error) {
 	}
 
 	return cfg.Width, cfg.Height, nil
+}
+
+func ParseExpiration(expiration string) (int64, error) {
+	var duration int64
+	var err error
+	if strings.HasSuffix(expiration, "s") {
+		duration, err = strconv.ParseInt(strings.TrimSuffix(expiration, "s"), 10, 64)
+	} else if strings.HasSuffix(expiration, "m") {
+		duration, err = strconv.ParseInt(strings.TrimSuffix(expiration, "m"), 10, 64)
+		duration *= 60
+	} else if strings.HasSuffix(expiration, "h") {
+		duration, err = strconv.ParseInt(strings.TrimSuffix(expiration, "h"), 10, 64)
+		duration *= 3600
+	} else {
+		err = fmt.Errorf("invalid expiration format")
+	}
+
+	current_time := time.Now().Unix()
+	duration = current_time + duration
+
+	if duration < current_time {
+		return 0, fmt.Errorf("expiration time is in the past")
+	}
+
+	return duration, err
 }

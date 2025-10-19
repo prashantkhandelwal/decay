@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -29,8 +30,22 @@ func UploadHandler(fconfig *config.FileSettings) gin.HandlerFunc {
 		}
 
 		title := g.PostForm("title")
+		expiration := g.PostForm("expiration")
+
 		var f db.File
 		f.Title = title
+
+		if strings.TrimSpace(expiration) != "" {
+			expireDuration, err := utils.ParseExpiration(expiration)
+			if err != nil {
+				log.Println("Invalid expiration format:", err)
+				g.String(http.StatusBadRequest, fmt.Sprintf("Invalid expiration format: %s", err.Error()))
+				middleware.HttpBadRequests.WithLabelValues(g.Request.Method, g.FullPath(), strconv.Itoa(g.Writer.Status())).Inc()
+				return
+			}
+			log.Printf("File will expire at Unix time: %d\n", expireDuration)
+			f.Expiration = expireDuration
+		}
 
 		f.Size = file.Size
 		f.Mime = file.Header.Get("Content-Type")

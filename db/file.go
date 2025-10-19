@@ -60,7 +60,6 @@ func InsertFile(f File, file *multipart.FileHeader) (string, error) {
 	f.DisplayURL = displayURL
 
 	f.Time = time.Now().Unix() // time the file was uploaded
-	f.Expiration = 0           // in seconds, 0 means never expires
 	f.Filename = file.Filename
 
 	result, err := db.ExecContext(ctx, query,
