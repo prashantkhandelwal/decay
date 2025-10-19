@@ -1,0 +1,55 @@
+{
+	"info": {
+		"_postman_id": "b538d94d-c872-4ddf-bd1a-3be91dc9ae82",
+		"name": "Decay",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18172118",
+		"_collection_link": "https://midnightprogrammer-0705.postman.co/workspace/Decay~8dfef8e7-8bed-48c4-a067-eab56f07fe8e/collection/18172118-b538d94d-c872-4ddf-bd1a-3be91dc9ae82?action=share&source=collection_link&creator=18172118"
+	},
+	"item": [
+		{
+			"name": "Upload File",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/E:/Downloads/pins/42aabf8d8a872d148d3c930d95648ccc.jpg"
+						},
+						{
+							"key": "title",
+							"value": "prashant",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8989/upload",
+					"host": [
+						"localhost"
+					],
+					"port": "8989",
+					"path": [
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AccessToken",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
